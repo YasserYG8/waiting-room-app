@@ -1,4 +1,4 @@
-# waiting_room_waiting
+# waiting_room_app
 
 A new Flutter project.
 
