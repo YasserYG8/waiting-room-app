@@ -5,20 +5,20 @@ void main() {
   test('should add a client to the waiting list', () {
     final manager = WaitingRoomManager();
 
-    manager.addClient('John Doe');
+    manager.addClient('Gombra Yasser');
 
     expect(manager.clients.length, 1);
-    expect(manager.clients.first, 'John Doe');
+    expect(manager.clients.first, 'Gombra Yasser');
   });
 
   test('should remove a client from the waiting list', () {
     final manager = WaitingRoomManager();
-    manager.addClient('John Doe');
-    manager.addClient('Jane Doe');
+    manager.addClient('Gombra Yasser');
+    manager.addClient('Gombra Yasser');
 
-    manager.removeClient('John Doe');
+    manager.removeClient('Gombra Yasser');
 
     expect(manager.clients.length, 1);
-    expect(manager.clients.first, 'Jane Doe');
+    expect(manager.clients.first, 'Gombra Yasser');
   });
 }
