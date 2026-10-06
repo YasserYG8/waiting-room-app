@@ -17,8 +17,8 @@ This document discloses and documents the use of an AI coding assistant during t
 
 The user took the role of **Technical Lead / Driver**, instructing the AI assistant incrementally and requiring clear pedagogical explanations and test-first verification before proceeding:
 
-1. **Analytical Inquiry**: The user started by asking for simple, step-by-step explanations of the existing workshop documentation before writing any code.
-2. **Step-by-Step Gated Progression**: Rather than letting the assistant make bulk automated changes, the user dictated sequential steps:
+1. **Understanding the Goal First (Concept-Before-Execution)**: Before permitting any code generation or modifications, the user insisted on thoroughly understanding the project objectives, architecture, and motivations (*"explain this file step by step"*, *"explain the workshop 3"*). The user refused to treat the AI as a black-box code generator, intentionally validating the *why* and the architectural goal before giving the command: *"go aheade and execute"*.
+2. **Step-by-Step Gated Progression**: Rather than letting the assistant make bulk automated changes, the user dictated sequential steps only after the objective of each step was clarified:
    * *"go aheade and execute the step 1"* (Dependency setup)
    * *"go aheade and start by number 2"* (Unit test execution)
    * *"yeah go aheade with step 3"* (Widget test execution)
@@ -39,6 +39,7 @@ The user took the role of **Technical Lead / Driver**, instructing the AI assist
 * **Agent Action**: Outlined the workshop requirements: eliminating `setState()` prop-drilling, introducing `QueueProvider`, implementing the "Next Client" (FIFO) feature, and writing tests first (TDD).
 
 ### Phase 3: Incremental TDD Implementation
+* **Goal Verification**: The user made sure the architectural objectives (why Provider is needed, how TDD works) were completely clear before authorizing code execution.
 * **Step 1 (Dependencies)**:
   * User instruction: *"go aheade and execute the step 1"*.
   * Action: Added `provider: ^6.1.2` to `pubspec.yaml` and executed `flutter pub get`.
