@@ -49,8 +49,6 @@ app.*.map.json
 
 
 #documentation
-docs/workshop1.pdf
-docs/Workshop 2 – State Management + TDD.pdf
-docs/PROJECT_EXPLANATION.md
-docs/Workshop 3 — Provider & Scalable State Management.pdf
-docs/Flutter Provider — Step-by-Step Guide.pdf
+docs
+#enviroment variables
+.env
