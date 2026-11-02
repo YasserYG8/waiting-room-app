@@ -224,12 +224,24 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                                 fontSize: 16,
                               ),
                             ),
-                            subtitle: Row(
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                                const SizedBox(width: 4),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _formatTime(client.createdAt),
+                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
                                 Text(
-                                  _formatTime(client.createdAt),
+                                  client.lat == null
+                                      ? '📍 Location not captured'
+                                      : '📍 ${client.lat?.toStringAsFixed(4)}, ${client.lng?.toStringAsFixed(4)}',
                                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                                 ),
                               ],

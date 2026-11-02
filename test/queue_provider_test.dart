@@ -2,7 +2,11 @@
 
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:waiting_room_app/geolocation_service.dart';
+import 'package:waiting_room_app/local_queue_service.dart';
 import 'package:waiting_room_app/queue_provider.dart';
 
 class FakePostgrestFilterBuilder extends Fake implements PostgrestFilterBuilder<dynamic> {
@@ -21,13 +25,13 @@ class FakePostgrestFilterBuilder extends Fake implements PostgrestFilterBuilder<
 }
 
 class FakeSupabaseQueryBuilder extends Fake implements SupabaseQueryBuilder {
-  Object? lastInserted;
+  Object? lastUpserted;
   bool deleteCalled = false;
   final FakePostgrestFilterBuilder filterBuilder = FakePostgrestFilterBuilder();
 
   @override
-  PostgrestFilterBuilder<dynamic> insert(Object values, {bool defaultToNull = true}) {
-    lastInserted = values;
+  PostgrestFilterBuilder<dynamic> upsert(Object values, {String? onConflict, bool ignoreDuplicates = false, bool defaultToNull = true}) {
+    lastUpserted = values;
     return filterBuilder;
   }
 
@@ -49,41 +53,79 @@ class FakeSupabaseClient extends Fake implements SupabaseClient {
   }
 }
 
+class FakeGeolocationService extends Fake implements GeolocationService {
+  @override
+  Future<Position?> getCurrentPosition() async => null;
+}
+
 void main() {
-  test('addClient calls insert with client name', () async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    databaseFactory = databaseFactoryFfi;
+  });
+
+  test('addClient saves client locally and triggers sync', () async {
     final fakeClient = FakeSupabaseClient();
-    final provider = QueueProvider.forTesting(fakeClient);
+    final localDb = LocalQueueService(inMemory: true);
+    final fakeGeo = FakeGeolocationService();
+    final provider = QueueProvider.forTesting(
+      fakeClient,
+      localDb: localDb,
+      geoService: fakeGeo,
+    );
 
     await provider.addClient('Alice');
 
-    expect(fakeClient.fromTable, 'clients');
-    expect(fakeClient.queryBuilder.lastInserted, {'name': 'Alice'});
+    expect(provider.clients.length, 1);
+    expect(provider.clients.first.name, 'Alice');
   });
 
-  test('addClient does not call insert when name is empty', () async {
+  test('addClient does not add when name is empty', () async {
     final fakeClient = FakeSupabaseClient();
-    final provider = QueueProvider.forTesting(fakeClient);
+    final localDb = LocalQueueService(inMemory: true);
+    final fakeGeo = FakeGeolocationService();
+    final provider = QueueProvider.forTesting(
+      fakeClient,
+      localDb: localDb,
+      geoService: fakeGeo,
+    );
 
     await provider.addClient('   ');
 
-    expect(fakeClient.fromTable, isNull);
-    expect(fakeClient.queryBuilder.lastInserted, isNull);
+    expect(provider.clients.isEmpty, isTrue);
   });
 
-  test('removeClient calls delete matching id', () async {
+  test('removeClient removes from provider and calls delete', () async {
     final fakeClient = FakeSupabaseClient();
-    final provider = QueueProvider.forTesting(fakeClient);
+    final localDb = LocalQueueService(inMemory: true);
+    final fakeGeo = FakeGeolocationService();
+    final provider = QueueProvider.forTesting(
+      fakeClient,
+      localDb: localDb,
+      geoService: fakeGeo,
+    );
 
-    await provider.removeClient('client-uuid-123');
+    await provider.addClient('Alice');
+    final id = provider.clients.first.id;
 
+    await provider.removeClient(id);
+
+    expect(provider.clients.isEmpty, isTrue);
     expect(fakeClient.fromTable, 'clients');
     expect(fakeClient.queryBuilder.deleteCalled, isTrue);
-    expect(fakeClient.queryBuilder.filterBuilder.lastMatched, {'id': 'client-uuid-123'});
+    expect(fakeClient.queryBuilder.filterBuilder.lastMatched, {'id': id});
   });
 
   test('nextClient does not call delete when queue is empty', () async {
     final fakeClient = FakeSupabaseClient();
-    final provider = QueueProvider.forTesting(fakeClient);
+    final localDb = LocalQueueService(inMemory: true);
+    final fakeGeo = FakeGeolocationService();
+    final provider = QueueProvider.forTesting(
+      fakeClient,
+      localDb: localDb,
+      geoService: fakeGeo,
+    );
 
     await provider.nextClient();
 
